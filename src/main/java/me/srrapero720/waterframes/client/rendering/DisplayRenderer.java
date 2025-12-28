@@ -138,7 +138,6 @@ public class DisplayRenderer implements BlockEntityRenderer<DisplayTile> {
         // 根据 HDR 模式选择合适的 RenderType
         RenderType renderType;
         if (hdrMode != VideoPlayer.HDR_MODE_SDR && HdrRenderType.isHdrShaderAvailable()) {
-            // HDR 内容使用 HDR 渲染类型
             renderType = HdrRenderType.getDisplayRenderType(texture, hdrMode);
         } else if (DisplaysConfig.shaderMode()) {
             renderType = RenderType.entityTranslucentCull(texture);

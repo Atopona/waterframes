@@ -14,7 +14,7 @@ public class WVCompat {
     }
 
     public static void openScreen(URI uri, int volume) {
-        if (!INSTALLED) return;
+        if (INSTALLED) return;
 
         Minecraft.getInstance().setScreen(WVExpansion.getWaterVisionExpansion(uri, volume));
     }

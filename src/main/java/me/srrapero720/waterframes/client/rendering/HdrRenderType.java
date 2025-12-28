@@ -2,7 +2,6 @@ package me.srrapero720.waterframes.client.rendering;
 
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import me.srrapero720.waterframes.client.rendering.core.ShaderCompat;
 import net.minecraft.Util;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
@@ -45,23 +44,8 @@ public class HdrRenderType extends RenderType {
     
     /**
      * 检查 HDR shader 是否可用
-     * 当光影启用时返回 false 以避免冲突
      */
     public static boolean isHdrShaderAvailable() {
-        if (hdrTonemapShader == null) {
-            return false;
-        }
-        // 当光影启用时，禁用自定义 HDR shader 以避免冲突
-        if (ShaderCompat.areShadersActive()) {
-            return false;
-        }
-        return true;
-    }
-    
-    /**
-     * 检查 HDR shader 是否已注册（不考虑光影状态）
-     */
-    public static boolean isHdrShaderRegistered() {
         return hdrTonemapShader != null;
     }
     
@@ -99,18 +83,17 @@ public class HdrRenderType extends RenderType {
     });
     
     /**
-     * 标准 SDR 渲染类型（无色调映射）- 兼容 Iris/Oculus
-     * 使用 entityTranslucentCull 以获得更好的光影兼容性
+     * 标准 SDR 渲染类型（无色调映射）
      */
     private static final Function<ResourceLocation, RenderType> SDR_TRANSLUCENT = Util.memoize((texture) -> {
         CompositeState state = CompositeState.builder()
-                .setShaderState(RENDERTYPE_ENTITY_TRANSLUCENT_CULL_SHADER)
+                .setShaderState(RENDERTYPE_TRANSLUCENT_SHADER)
                 .setTextureState(new TextureStateShard(texture, false, false))
                 .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
                 .setLightmapState(LIGHTMAP)
-                .setOverlayState(OVERLAY)
+                .setOverlayState(NO_OVERLAY)
                 .createCompositeState(false);
-        return create("waterframes_sdr_translucent", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 
+        return create("waterframes_sdr_translucent", DefaultVertexFormat.BLOCK, VertexFormat.Mode.QUADS, 
                       256, true, true, state);
     });
     
@@ -122,8 +105,6 @@ public class HdrRenderType extends RenderType {
      * @return 合适的 RenderType
      */
     public static RenderType getDisplayRenderType(ResourceLocation texture, int hdrMode) {
-        // 根据 HDR 模式选择渲染类型
-        // 当光影启用时，isHdrShaderAvailable() 返回 false，使用 SDR 渲染
         if (hdrMode != VideoPlayer.HDR_MODE_SDR && isHdrShaderAvailable()) {
             setHdrMode(hdrMode);
             return HDR_TRANSLUCENT.apply(texture);
