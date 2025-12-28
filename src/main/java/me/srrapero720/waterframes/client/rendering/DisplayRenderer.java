@@ -76,9 +76,26 @@ public class DisplayRenderer implements BlockEntityRenderer<DisplayTile> {
         int a = tile.data.alpha;
 
         pose.pushPose();
-        pose.translate(0.5, 0.5, 0.5);
+
+        // 计算投影画面的实际中心位置，旋转应围绕画面中心而非方块中心
+        float projectionDepth;
+        if (tile.caps.projects()) {
+            // 投影仪：画面在 projectionDistance 处
+            projectionDepth = facing.positive ? tile.data.projectionDistance : (1f - tile.data.projectionDistance);
+        } else {
+            // 非投影仪（如相框）：画面在方块表面
+            projectionDepth = 0.5f;
+        }
+
+        // 计算画面中心点
+        float centerX = (box.getMin(Axis.X) + box.getMax(Axis.X)) / 2f;
+        float centerY = (box.getMin(Axis.Y) + box.getMax(Axis.Y)) / 2f;
+        float centerZ = (box.getMin(Axis.Z) + box.getMax(Axis.Z)) / 2f;
+
+        // 围绕画面中心进行旋转
+        pose.translate(centerX, centerY, centerZ);
         pose.mulPose(facing.rotation().rotation((float) Math.toRadians(-tile.data.rotation)));
-        pose.translate(-0.5, -0.5, -0.5);
+        pose.translate(-centerX, -centerY, -centerZ);
 
         // TWEAK FOR "EXTRA-RESIZING"
         if (tile.caps.growMax(tile, facing, invertedFace)) {

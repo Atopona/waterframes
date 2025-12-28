@@ -1,0 +1,37 @@
+name: ReleaseJar
+
+on:
+  push:
+    tags:
+      - "*"
+
+permissions:
+  contents: read
+
+jobs:
+  building:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Tag
+        uses: actions/checkout@v4
+
+      - name: Set up JDK (21)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'microsoft'
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Build release artifacts
+        run: ./gradlew build shadowJar sourcesJar --parallel -x test
+      
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: waterframes-jars
+          path: |
+            build/libs/*.jar
+            builtJars/*.jar

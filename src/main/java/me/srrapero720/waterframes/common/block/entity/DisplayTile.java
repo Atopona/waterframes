@@ -375,8 +375,15 @@ public class DisplayTile extends BlockEntity {
         final var facing = Facing.get(tile.getDirection());
         final var box = new AlignedBox();
 
-        if (facing.positive) box.setMax(facing.axis, tile.data.projectionDistance);
-        else box.setMin(facing.axis, 1f - tile.data.projectionDistance);
+        // 投影面应该是一个平面，min 和 max 在投影轴上应该相同
+        // 这样可以避免画面前后倾斜的问题
+        if (facing.positive) {
+            box.setMin(facing.axis, tile.data.projectionDistance);
+            box.setMax(facing.axis, tile.data.projectionDistance);
+        } else {
+            box.setMin(facing.axis, 1f - tile.data.projectionDistance);
+            box.setMax(facing.axis, 1f - tile.data.projectionDistance);
+        }
 
         Axis one = facing.one();
         Axis two = facing.two();
