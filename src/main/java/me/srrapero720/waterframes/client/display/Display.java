@@ -80,24 +80,6 @@ public class Display {
         this.mediaPlayer.start(this.tile.data.getUri());
         DisplayList.add(this);
     }
-    
-    /**
-     * 获取当前视频的 HDR 模式
-     * @return HDR 模式 (0=SDR, 1=PQ/HDR10, 2=HLG)
-     */
-    public int getHdrMode() {
-        if (displayMode == Mode.VIDEO && mediaPlayer != null) {
-            return mediaPlayer.getHdrMode();
-        }
-        return VideoPlayer.HDR_MODE_SDR;
-    }
-    
-    /**
-     * 检查当前内容是否为 HDR
-     */
-    public boolean isHdr() {
-        return getHdrMode() != VideoPlayer.HDR_MODE_SDR;
-    }
 
     public int width() {
         return switch (displayMode) {

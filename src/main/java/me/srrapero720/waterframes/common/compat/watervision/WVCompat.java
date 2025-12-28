@@ -1,6 +1,7 @@
 package me.srrapero720.waterframes.common.compat.watervision;
 
 import me.srrapero720.waterframes.WaterFrames;
+import me.srrapero720.watervision.client.screens.VisionScreen;
 import net.minecraft.client.Minecraft;
 
 import java.net.URI;

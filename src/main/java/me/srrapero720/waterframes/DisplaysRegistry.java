@@ -1,6 +1,5 @@
 package me.srrapero720.waterframes;
 
-import me.srrapero720.waterframes.client.rendering.HdrRenderType;
 import me.srrapero720.waterframes.client.rendering.TextureWrapper;
 import me.srrapero720.waterframes.client.rendering.DisplayRenderer;
 import me.srrapero720.waterframes.common.block.*;
@@ -10,7 +9,6 @@ import me.srrapero720.waterframes.common.item.RemoteControl;
 import me.srrapero720.waterframes.common.item.data.CodecManager;
 import me.srrapero720.waterframes.common.item.data.RemoteData;
 import me.srrapero720.waterframes.common.network.packets.*;
-import net.neoforged.neoforge.client.event.RegisterShadersEvent;
 import net.neoforged.neoforge.server.permission.PermissionAPI;
 import net.neoforged.neoforge.server.permission.events.PermissionGatherEvent;
 import net.neoforged.neoforge.server.permission.nodes.PermissionNode;
@@ -44,7 +42,6 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
-import java.io.IOException;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -228,17 +225,6 @@ public class DisplaysRegistry {
             BlockEntityRenderers.register(TILE_TV.get(), DisplayRenderer::new);
             BlockEntityRenderers.register(TILE_BIG_TV.get(), DisplayRenderer::new);
             BlockEntityRenderers.register(TILE_TV_BOX.get(), DisplayRenderer::new);
-        }
-        
-        @SubscribeEvent
-        @OnlyIn(Dist.CLIENT)
-        public static void onRegisterShaders(RegisterShadersEvent event) {
-            try {
-                HdrRenderType.registerShader(event.getResourceProvider());
-                LOGGER.info(IT, "HDR tonemap shader registered successfully");
-            } catch (IOException e) {
-                LOGGER.error(IT, "Failed to register HDR tonemap shader", e);
-            }
         }
     }
 

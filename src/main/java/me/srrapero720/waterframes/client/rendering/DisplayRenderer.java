@@ -17,7 +17,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
-import org.watermedia.api.player.videolan.VideoPlayer;
 import team.creative.creativecore.common.util.math.base.Axis;
 import team.creative.creativecore.common.util.math.base.Facing;
 import team.creative.creativecore.common.util.math.box.AlignedBox;
@@ -106,7 +105,6 @@ public class DisplayRenderer implements BlockEntityRenderer<DisplayTile> {
         }
 
         // RENDERING
-        int hdrMode = display.getHdrMode();
         if (display.isLoading()) {
             this.vertex(pose, bufferSource, getLoadingBox(tile, box, facing), boxFace, facing, packedLight, packedOverlay,
                     front, back, flipX, flipY, r, g, b, a, WaterFrames.LOADING_ANIMATION);
@@ -114,7 +112,7 @@ public class DisplayRenderer implements BlockEntityRenderer<DisplayTile> {
             var tex = display.getTextureId();
             if (tex != null) {
                 this.vertex(pose, bufferSource, box, boxFace, facing, packedLight, packedOverlay,
-                        front, back, flipX, flipY, r, g, b, a, tex, hdrMode);
+                        front, back, flipX, flipY, r, g, b, a, tex);
             }
 
             if (display.isBuffering()) {
@@ -129,23 +127,7 @@ public class DisplayRenderer implements BlockEntityRenderer<DisplayTile> {
     public void vertex(PoseStack pose, MultiBufferSource source, AlignedBox box, BoxFace boxface, Facing facing, int packedLight, int packedOverlay,
                        boolean front, boolean back, boolean flipX, boolean flipY, int r, int g, int b, int a, ResourceLocation texture) {
 
-        vertex(pose, source, box, boxface, facing, packedLight, packedOverlay, front, back, flipX, flipY, r, g, b, a, texture, VideoPlayer.HDR_MODE_SDR);
-    }
-    
-    public void vertex(PoseStack pose, MultiBufferSource source, AlignedBox box, BoxFace boxface, Facing facing, int packedLight, int packedOverlay,
-                       boolean front, boolean back, boolean flipX, boolean flipY, int r, int g, int b, int a, ResourceLocation texture, int hdrMode) {
-
-        // 根据 HDR 模式选择合适的 RenderType
-        RenderType renderType;
-        if (hdrMode != VideoPlayer.HDR_MODE_SDR && HdrRenderType.isHdrShaderAvailable()) {
-            renderType = HdrRenderType.getDisplayRenderType(texture, hdrMode);
-        } else if (DisplaysConfig.shaderMode()) {
-            renderType = RenderType.entityTranslucentCull(texture);
-        } else {
-            renderType = BLOCK_TRANSLUCENT_CULL_CUSTOM_TEXTURE.apply(texture);
-        }
-        
-        VertexConsumer builder = source.getBuffer(renderType);
+        VertexConsumer builder = source.getBuffer(DisplaysConfig.shaderMode() ? RenderType.entityTranslucentCull(texture) : BLOCK_TRANSLUCENT_CULL_CUSTOM_TEXTURE.apply(texture));
         if (front) {
             for (int i = 0; i < boxface.corners.length; i++) {
                 BoxCorner corner = boxface.corners[i];
