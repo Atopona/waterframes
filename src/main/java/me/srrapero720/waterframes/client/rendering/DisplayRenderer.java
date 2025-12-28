@@ -106,7 +106,11 @@ public class DisplayRenderer implements BlockEntityRenderer<DisplayTile> {
         }
 
         // RENDERING
-        int hdrMode = display.getHdrMode();
+        int hdrMode = VideoPlayer.HDR_MODE_SDR;
+        try {
+            hdrMode = display.getHdrMode();
+        } catch (Exception ignored) {}
+        
         if (display.isLoading()) {
             this.vertex(pose, bufferSource, getLoadingBox(tile, box, facing), boxFace, facing, packedLight, packedOverlay,
                     front, back, flipX, flipY, r, g, b, a, WaterFrames.LOADING_ANIMATION);

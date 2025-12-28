@@ -86,8 +86,12 @@ public class Display {
      * @return HDR 模式 (0=SDR, 1=PQ/HDR10, 2=HLG)
      */
     public int getHdrMode() {
-        if (displayMode == Mode.VIDEO && mediaPlayer != null) {
-            return mediaPlayer.getHdrMode();
+        if (displayMode == Mode.VIDEO && mediaPlayer != null && mediaPlayer.isSafeUse()) {
+            try {
+                return mediaPlayer.getHdrMode();
+            } catch (Exception e) {
+                return VideoPlayer.HDR_MODE_SDR;
+            }
         }
         return VideoPlayer.HDR_MODE_SDR;
     }
