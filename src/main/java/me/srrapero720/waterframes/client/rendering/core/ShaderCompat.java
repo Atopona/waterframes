@@ -59,8 +59,8 @@ public final class ShaderCompat {
                 return checkOculusShadersActive();
             }
         } catch (Exception e) {
-            // 如果反射失败，假设光影已启用（保守策略）
-            return true;
+            // 如果反射失败，假设光影未启用（宽松策略，允许渲染）
+            return false;
         }
         
         return false;
@@ -82,7 +82,7 @@ public final class ShaderCompat {
                     return currentPipeline != null;
                 }
             } catch (Exception ignored) {}
-            return true; // 保守策略
+            return false; // 检测失败时假设未启用
         }
     }
     
@@ -93,7 +93,7 @@ public final class ShaderCompat {
             Object instance = oculusApiClass.getMethod("getInstance").invoke(null);
             return (Boolean) oculusApiClass.getMethod("isShaderPackInUse").invoke(instance);
         } catch (Exception e) {
-            return true; // 保守策略
+            return false; // 检测失败时假设未启用
         }
     }
     
