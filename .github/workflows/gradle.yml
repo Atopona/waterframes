@@ -2,9 +2,9 @@ name: Build CI
 
 on:
   push:
-    branches: [ "main", "2.0.x" ]
+    branches: [ "1.21.1-neo", "2.0.x" ]
   pull_request:
-    branches: [ "main", "2.0.x" ]
+    branches: [ "1.21.1-neo", "2.0.x" ]
 
 permissions:
   contents: read
