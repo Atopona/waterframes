@@ -2,7 +2,6 @@ package me.srrapero720.waterframes.client.rendering;
 
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import me.srrapero720.waterframes.client.rendering.core.ShaderCompat;
 import net.minecraft.Util;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
@@ -20,7 +19,6 @@ import java.util.function.Function;
 /**
  * WaterFrames HDR 渲染类型
  * 提供 HDR 到 SDR 色调映射的自定义 RenderType
- * 兼容 Iris/Oculus 光影模组
  */
 @OnlyIn(Dist.CLIENT)
 public class HdrRenderType extends RenderType {
@@ -46,17 +44,9 @@ public class HdrRenderType extends RenderType {
     
     /**
      * 检查 HDR shader 是否可用
-     * 当 Iris/Oculus 光影启用时，返回 false 以使用兼容的渲染路径
      */
     public static boolean isHdrShaderAvailable() {
-        if (hdrTonemapShader == null) {
-            return false;
-        }
-        // 当光影启用时，禁用自定义 HDR shader 以避免冲突
-        if (ShaderCompat.areShadersActive()) {
-            return false;
-        }
-        return true;
+        return hdrTonemapShader != null;
     }
     
     /**
@@ -71,7 +61,7 @@ public class HdrRenderType extends RenderType {
      */
     public static void setHdrMode(int mode) {
         currentHdrMode = mode;
-        if (hdrTonemapShader != null && !ShaderCompat.areShadersActive()) {
+        if (hdrTonemapShader != null) {
             var uniform = hdrTonemapShader.getUniform("HdrMode");
             if (uniform != null) {
                 uniform.set(currentHdrMode);
@@ -116,28 +106,14 @@ public class HdrRenderType extends RenderType {
     });
     
     /**
-     * 光影兼容的渲染类型 - 使用 Minecraft 原生 shader
-     */
-    private static final Function<ResourceLocation, RenderType> SHADER_COMPAT_TRANSLUCENT = Util.memoize((texture) -> {
-        // 使用 entityTranslucentCull，这是 Iris 最兼容的渲染类型之一
-        return entityTranslucentCull(texture);
-    });
-    
-    /**
      * 获取适合当前内容的 RenderType
-     * 自动处理 Iris/Oculus 光影兼容性
      * 
      * @param texture 纹理资源位置
      * @param hdrMode HDR 模式 (0=SDR, 1=PQ, 2=HLG)
      * @return 合适的 RenderType
      */
     public static RenderType getDisplayRenderType(ResourceLocation texture, int hdrMode) {
-        // 当光影启用时，使用兼容的渲染类型
-        if (ShaderCompat.areShadersActive()) {
-            return SHADER_COMPAT_TRANSLUCENT.apply(texture);
-        }
-        
-        // 正常情况下，根据 HDR 模式选择渲染类型
+        // 根据 HDR 模式选择渲染类型
         if (hdrMode != VideoPlayer.HDR_MODE_SDR && isHdrShaderAvailable()) {
             setHdrMode(hdrMode);
             return HDR_TRANSLUCENT.apply(texture);

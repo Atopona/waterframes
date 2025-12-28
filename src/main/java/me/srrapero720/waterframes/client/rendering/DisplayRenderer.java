@@ -4,7 +4,6 @@ import com.mojang.blaze3d.vertex.*;
 import com.mojang.blaze3d.vertex.Tesselator;
 import me.srrapero720.waterframes.DisplaysConfig;
 import me.srrapero720.waterframes.WaterFrames;
-import me.srrapero720.waterframes.client.rendering.core.ShaderCompat;
 import me.srrapero720.waterframes.common.block.entity.DisplayTile;
 import me.srrapero720.waterframes.common.block.entity.ProjectorTile;
 import net.minecraft.Util;
@@ -33,12 +32,6 @@ public class DisplayRenderer implements BlockEntityRenderer<DisplayTile> {
         RenderType.CompositeState rendertype$compositestate = RenderType.CompositeState.builder().setShaderState(RenderType.RENDERTYPE_TRANSLUCENT_SHADER).setTextureState(new RenderStateShard.TextureStateShard(p_173198_, false, false)).setTransparencyState(RenderType.TRANSLUCENT_TRANSPARENCY).setLightmapState(RenderType.LIGHTMAP).setOverlayState(RenderType.NO_OVERLAY).createCompositeState(false);
         return RenderType.create("block_translucent_cull_custom_texture", DefaultVertexFormat.BLOCK, VertexFormat.Mode.QUADS, 256, true, true, rendertype$compositestate);
     });
-    
-    /**
-     * 光影兼容的渲染类型 - 使用 entityTranslucentCull
-     * 这是 Iris/Oculus 最兼容的渲染类型之一
-     */
-    private static final Function<ResourceLocation, RenderType> SHADER_COMPAT_RENDER_TYPE = Util.memoize(RenderType::entityTranslucentCull);
 
     private final BlockEntityRendererProvider.Context context;
     public DisplayRenderer(BlockEntityRendererProvider.Context context) {
@@ -142,16 +135,10 @@ public class DisplayRenderer implements BlockEntityRenderer<DisplayTile> {
     public void vertex(PoseStack pose, MultiBufferSource source, AlignedBox box, BoxFace boxface, Facing facing, int packedLight, int packedOverlay,
                        boolean front, boolean back, boolean flipX, boolean flipY, int r, int g, int b, int a, ResourceLocation texture, int hdrMode) {
 
-        // 检测是否在光影环境下
-        final boolean shadersActive = ShaderCompat.areShadersActive();
-        
-        // 根据环境选择合适的 RenderType
+        // 根据 HDR 模式选择合适的 RenderType
         RenderType renderType;
-        if (shadersActive) {
-            // 光影环境下使用兼容的渲染类型
-            renderType = SHADER_COMPAT_RENDER_TYPE.apply(texture);
-        } else if (hdrMode != VideoPlayer.HDR_MODE_SDR && HdrRenderType.isHdrShaderAvailable()) {
-            // 非光影环境下，HDR 内容使用 HDR 渲染类型
+        if (hdrMode != VideoPlayer.HDR_MODE_SDR && HdrRenderType.isHdrShaderAvailable()) {
+            // HDR 内容使用 HDR 渲染类型
             renderType = HdrRenderType.getDisplayRenderType(texture, hdrMode);
         } else if (DisplaysConfig.shaderMode()) {
             renderType = RenderType.entityTranslucentCull(texture);
